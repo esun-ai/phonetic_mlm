@@ -12,6 +12,7 @@ from transformers import BertTokenizer, BertForTokenClassification
 
 from dataset import prepare_data, TypoDataset
 from utils import load_config, RunningAverage, get_logger
+from detector_utils import obtain_valid_detection_preds
 
 
 def train_batch(model, data, optimizer, device):
@@ -32,14 +33,11 @@ def train_batch(model, data, optimizer, device):
     return loss.item()
 
 
-def _get_metric(input_ids, labels, preds, tokenizer):
-    skip_token_ids = set([tokenizer.cls_token_id, tokenizer.sep_token_id, tokenizer.pad_token_id])
+def _get_metric(input_ids, labels, preds):
     precisions, recalls, f1s = [], [], []
     for token_id_list, label_list, pred_list in zip(input_ids, labels, preds):
         true_pos, false_pos, false_neg = 0, 0, 0
         for token_id, label, pred in zip(token_id_list, label_list, pred_list):
-            if token_id in skip_token_ids:
-                continue
             true_pos += 1 if label == 1 and pred == 1 else 0
             false_pos += 1 if label == 0 and pred == 1 else 0
             false_neg += 1 if label == 1 and pred == 0 else 0
@@ -90,8 +88,6 @@ def evaluate(model, valid_loader, device, tokenizer, threshold=0.5):
     preds_collection = []
     labels_collection = []
 
-    logit_threshold = np.log(threshold / (1 - threshold))
-
     with torch.no_grad():
         for data in tqdm(valid_loader, desc='evaluate'):
             input_ids, token_type_ids, attention_mask, labels = [d.to(device) for d in data]
@@ -105,15 +101,13 @@ def evaluate(model, valid_loader, device, tokenizer, threshold=0.5):
 
             loss_averger.add(outputs.loss.item())
 
-            input_ids = input_ids.cpu().tolist()
-            # (logit_positive - logit_negative) >= logit_threshold
-            preds = ((outputs.logits[:,:,1] - outputs.logits[:,:,0]) >= logit_threshold).int().cpu().tolist()
+            preds = obtain_valid_detection_preds(outputs.logits, input_ids, tokenizer, threshold=threshold)
 
-            input_ids_collection.extend(input_ids)
+            input_ids_collection.extend(input_ids.cpu().tolist())
             preds_collection.extend(preds)
-            labels_collection.extend(labels.tolist())
+            labels_collection.extend(labels.cpu().tolist())
 
-            precisions, recalls, f1s = _get_metric(input_ids, labels, preds, tokenizer)
+            precisions, recalls, f1s = _get_metric(input_ids, labels, preds)
             precision_averger.add_all(precisions)
             recall_averger.add_all(recalls)
             f1_averger.add_all(f1s)
