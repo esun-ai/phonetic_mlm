@@ -15,7 +15,7 @@ def main(config, test_json, checkpoint, threshold):
 
     tokenizer = BertTokenizer.from_pretrained(config.model_source)
 
-    texts, typos, _ = prepare_data(test_json)
+    texts, typos, _, _ = prepare_data(test_json)
 
     dataset = TypoDataset(tokenizer, texts, typos, max_length=config.max_len, for_train=True, for_detect=True)
 

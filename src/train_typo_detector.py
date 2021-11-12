@@ -17,7 +17,7 @@ from detector_utils import obtain_valid_detection_preds
 
 def train_batch(model, data, optimizer, device):
     model.train()
-    input_ids, token_type_ids, attention_mask, labels = [d.to(device) for d in data]
+    input_ids, token_type_ids, attention_mask, labels = [d.to(device) for d in data[:4]]
 
     outputs = model(
         input_ids=input_ids,
@@ -90,7 +90,7 @@ def evaluate(model, valid_loader, device, tokenizer, threshold=0.5):
 
     with torch.no_grad():
         for data in tqdm(valid_loader, desc='evaluate'):
-            input_ids, token_type_ids, attention_mask, labels = [d.to(device) for d in data]
+            input_ids, token_type_ids, attention_mask, labels = [d.to(device) for d in data[:-1]]
 
             outputs = model(
                 input_ids=input_ids,
@@ -144,8 +144,8 @@ def main(config):
 
     tokenizer = BertTokenizer.from_pretrained(config.model_source)
 
-    train_texts, train_typos, _ = prepare_data(config.train_json)
-    valid_texts, valid_typos, _ = prepare_data(config.valid_json)
+    train_texts, train_typos, _, _ = prepare_data(config.train_json)
+    valid_texts, valid_typos, _, _ = prepare_data(config.valid_json)
 
     train_dataset = TypoDataset(tokenizer, train_texts, train_typos, max_length=config.max_len, for_train=True, for_detect=True)
     valid_dataset = TypoDataset(tokenizer, valid_texts, valid_typos, max_length=config.max_len, for_train=True, for_detect=True)

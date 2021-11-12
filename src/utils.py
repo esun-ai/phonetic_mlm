@@ -2,6 +2,8 @@ import re
 import logging
 import sys
 
+CHINESE_RE = r'[\u4e00-\u9fa5]'
+
 
 class RunningAverage:
     def __init__(self):

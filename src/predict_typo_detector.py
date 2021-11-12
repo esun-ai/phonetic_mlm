@@ -18,7 +18,7 @@ def predict(model, dataloader, device, tokenizer, threshold=0.5):
 
     with torch.no_grad():
         for data in tqdm(dataloader, desc='predict'):
-            input_ids, token_type_ids, attention_mask = [d.to(device) for d in data[:-1]]
+            input_ids, token_type_ids, attention_mask = [d.to(device) for d in data[:3]]
             infos = data[-1]
 
             outputs = model(

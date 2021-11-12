@@ -1,14 +1,16 @@
 import json
+import re
 
 import torch
 from torch.utils.data import Dataset
 from torch.nn.utils.rnn import pad_sequence
 
-from utils import tokenize_and_map
+from utils import tokenize_and_map, CHINESE_RE
+from dimsim import phonize
 
 
-def prepare_data(path):
-    texts, typos, bopomofos = [], [], []
+def prepare_data(path, obtain_bopomofo=False, obtain_true_text=False):
+    texts, typos, bopomofos, true_texts = [], [], [], []
     for line in open(path).readlines():
         line = line.strip()
         content = json.loads(line)
@@ -20,20 +22,25 @@ def prepare_data(path):
         texts.append(text)
         typos.append(typo)
 
-        if 'bopomofos' in content:
+        if obtain_bopomofo:
             bopomofo = content['bopomofos']
             bopomofos.append(bopomofo)
-    if bopomofos:
-        return texts, typos, bopomofos
-    else:
-        return texts, typos, None
+        if obtain_true_text:
+            true_text = content['true_text']
+            true_texts.append(true_text)
+
+    bopomofos = bopomofos if obtain_bopomofo else None
+    true_texts = true_texts if obtain_true_text else None
+    return texts, typos, bopomofos, true_texts
 
 
 class TypoDataset(Dataset):
-    def __init__(self, tokenizer, texts, typos=None, max_length=512, for_train=True, for_detect=True):
+    def __init__(self, tokenizer, texts, typos=None, bopomofos=None, bopomofo_dict=None, max_length=512, for_train=True, for_detect=False):
         self.tokenizer = tokenizer
         self.texts = texts
         self.typos = typos
+        self.bopomofos = bopomofos
+        self.bopomofo_dict = bopomofo_dict
         self.max_length = max_length
         self.for_train = for_train
         self.for_detect = for_detect
@@ -68,7 +75,7 @@ class TypoDataset(Dataset):
                 typo_flags.append(typo_flag)
         return typo_flags
 
-    def _obtain_correct_tokens(self, typo, text2token):
+    def _obtain_correct_tokens(self, typo, text2token, tokens):
         correct_tokens = []
         for char_position, token_index in enumerate(text2token):
             if token_index is None:
@@ -84,6 +91,32 @@ class TypoDataset(Dataset):
                 correct_tokens.append(correct_token)
         return correct_tokens
 
+    def _get_bopomofo_ids(self, bopomofo_dict, text2token, tokens, bopomofo_list=None):
+        bopomofo_ids = []
+        unknown_bopomofo_id = bopomofo_dict['UNK']
+        if bopomofo_list:
+            for char_position, token_index in enumerate(text2token):
+                if token_index is None:
+                    continue
+
+                bopomofo_id = bopomofo_dict.get(bopomofo_list[char_position],
+                                                bopomofo_dict['UNK'])
+                if token_index >= len(bopomofo_ids):  # append是參照token level而非char level
+                    bopomofo_ids.append(bopomofo_id)
+        else:
+            for token in tokens:
+                if re.match(CHINESE_RE, token):
+                    bopomofo = phonize(token)
+                    if bopomofo in bopomofo_dict:
+                        bopomofo_id = bopomofo_dict[bopomofo]
+                    else:
+                        print(f'warning: {bopomofo} is out of bopomofo_dict')
+                        bopomofo_id = unknown_bopomofo_id
+                    bopomofo_ids.append(bopomofo_id)
+                else:
+                    bopomofo_ids.append(unknown_bopomofo_id)
+        return [unknown_bopomofo_id] + bopomofo_ids + [unknown_bopomofo_id]
+
     def __getitem__(self, idx):
         text = self.texts[idx]
         tokens, text2token, token2text = tokenize_and_map(self.tokenizer, text)
@@ -98,6 +131,14 @@ class TypoDataset(Dataset):
 
         outputs = (input_ids, token_type_ids, attention_mask, )
 
+        if self.bopomofo_dict is not None:
+            bopomofo_list = self.bopomofos[idx] if self.bopomofos else None
+            bopomofo_ids = torch.tensor(
+                self._get_bopomofo_ids(self.bopomofo_dict, text2token, tokens, bopomofo_list)
+            )
+            assert input_ids.size(0) == token_type_ids.size(0) == attention_mask.size(0) == bopomofo_ids.size(0)
+            outputs += (bopomofo_ids, )
+
         if self.for_train:
             typo = self.typos[idx]
             if self.for_detect:
@@ -107,7 +148,7 @@ class TypoDataset(Dataset):
                     # for [CLS] and [SEP]
                 )
             else:
-                correct_tokens = self._obtain_correct_tokens(typo, text2token)
+                correct_tokens = self._obtain_correct_tokens(typo, text2token, tokens)
                 labels = torch.tensor(
                     [self.tokenizer.cls_token_id]
                     + self.tokenizer.convert_tokens_to_ids(correct_tokens)
@@ -141,11 +182,15 @@ class TypoDataset(Dataset):
 
         batch_output = (input_ids, token_type_ids, attention_mask)
 
+        if self.bopomofo_dict is not None:
+            bopomofo_ids = pad_sequence(outputs[3], batch_first=True)
+            batch_output += (bopomofo_ids, )
+
         if self.for_train:
-            labels = pad_sequence(outputs[3], batch_first=True)
+            labels = pad_sequence(outputs[-2], batch_first=True)
             batch_output += (labels, )
-        else:
-            infos = outputs[3]
-            batch_output += (infos, )
+
+        infos = outputs[-1]
+        batch_output += (infos, )
 
         return batch_output
