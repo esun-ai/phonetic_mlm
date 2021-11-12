@@ -14,10 +14,10 @@ def prepare_data(path, obtain_bopomofo=False, obtain_true_text=False):
     for line in open(path).readlines():
         line = line.strip()
         content = json.loads(line)
-        text = content['sentence']
+        text = content['text']
 
         typo = []
-        for (wrong_char, corrected_char, start) in content['typo']:
+        for (wrong_char, corrected_char, start) in content['subsitute_errors']:
             typo.append([wrong_char, corrected_char, start, start + 1])
         texts.append(text)
         typos.append(typo)
