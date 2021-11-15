@@ -17,7 +17,7 @@ def prepare_data(path, obtain_bopomofo=False, obtain_true_text=False):
         text = content['text']
 
         typo = []
-        for (wrong_char, corrected_char, start) in content['subsitute_errors']:
+        for (wrong_char, corrected_char, start) in content['substitute_errors']:
             typo.append([wrong_char, corrected_char, start, start + 1])
         texts.append(text)
         typos.append(typo)

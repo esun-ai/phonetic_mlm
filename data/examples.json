@@ -1,3 +1,0 @@
-{"text": "\u4ee3\u78bc\u662f\u75fe\u96f6\u4e5d\u516d\u4e03", "subsitute_errors": [["\u75fe", "\u5443", 3]], "true_text": "\u4ee3\u78bc\u662f\u5443\u96f6\u4e5d\u516d\u4e03"}
-{"text": "\u563f\u5b57\u865f\u662f\u4e0d\u662f", "subsitute_errors": [["\u563f", "\u5341", 0], ["\u5b57", "\u56db", 1]], "true_text": "\u5341\u56db\u865f\u662f\u4e0d\u662f"}
-{"text": "ccabc\u7684c\u55ceabc\u7684c\u5c0d\u5c0d\u597dcc\u597d", "subsitute_errors": [], "true_text": "rcabc\u7684c\u55ceabc\u7684c\u5c0drcc\u597d"}

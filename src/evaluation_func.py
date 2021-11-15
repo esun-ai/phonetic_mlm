@@ -182,7 +182,7 @@ def editops(ref_lst, hyp_lst):
                 hyp_idx -= 1
             elif operation_matrix[hyp_idx][ref_idx] == 1:
                 executions.append(
-                    (ref_idx, 'subsitute', ref_lst[ref_idx], hyp_lst[hyp_idx]))
+                    (ref_idx, 'substitute', ref_lst[ref_idx], hyp_lst[hyp_idx]))
                 ref_idx -= 1
                 hyp_idx -= 1
             elif operation_matrix[hyp_idx][ref_idx] == 2:
