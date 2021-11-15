@@ -2,6 +2,8 @@ import re
 
 import numpy as np
 
+from utils import CHINESE_RE
+
 
 def obtain_valid_detection_preds(detector_logits, input_ids, tokenizer, threshold=0.5):
     input_ids = input_ids.cpu().tolist()
@@ -26,7 +28,7 @@ def obtain_valid_detection_preds(detector_logits, input_ids, tokenizer, threshol
                     is_detected = 0
                 elif len(token) > 1:
                     is_detected = 0
-                elif not re.match(r'[\u4e00-\u9fff]', token):  # allow only chinese
+                elif not re.match(CHINESE_RE, token):  # allow only chinese
                     is_detected = 0
             pred.append(is_detected)
         revised_preds.append(pred)
