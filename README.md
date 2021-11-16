@@ -1,8 +1,12 @@
 # Integrated Semantic and Phonetic Post-correction for Chinese Speech Recognition
 
+| [paper](https://aclanthology.org/2021.rocling-1.13/) | [dataset](data/) | [pretrained detection model](https://storage.googleapis.com/esun-ai/bert_detection.zip) |
+
 Authors: [Yi-Chang Chen](https://github.com/GitYCC), Chun-Yen Cheng, [Chien-An Chen](https://github.com/LukeCCA), Ming-Chieh Sung and Yi-Ren Yeh
 
-| [paper](https://aclanthology.org/2021.rocling-1.13/) | [dataset](data/) |
+Due to the recent advances of natural language processing, several works have applied the pre-trained masked language model (MLM) of BERT to the post-correction of speech recognition. However, existing pre-trained models only consider the semantic correction while the phonetic features of words is neglected. The semantic-only post-correction will consequently decrease the performance since homophonic errors are fairly common in Chinese ASR. In this paper, we proposed a novel approach to collectively exploit the contextualized representation and the phonetic information between the error and its replacing candidates to alleviate the error rate of Chinese ASR. Our experiment results on real world speech recognition datasets showed that our proposed method has evidently lower CER than the baseline model, which utilized a pre-trained BERT MLM as the corrector.
+
+![method](misc/rocling_img_01.png)
 
 ## Honors
 
@@ -18,7 +22,33 @@ Our paper won **the best paper** of ROCLING 2021.
 pip install -r requirements.txt
 ```
 
-### Training BERT detection model
+### Download pretrained model
+
+Download pretrained detection model on AISHELL3: https://storage.googleapis.com/esun-ai/bert_detection.zip
+
+```
+mkdir saved_models
+cd saved_models
+wget https://storage.googleapis.com/esun-ai/bert_detection.zip
+unzip bert_detection.zip
+cd ..
+```
+
+### Test Phonetic MLM
+
+```
+python src/test_phonetic_mlm.py --config configs/config_phonetic_mlm.py --json data/aishell3_test.json
+```
+
+### Inference Phonetic MLM
+
+```
+python src/predict_phonetic_mlm.py --config configs/config_phonetic_mlm.py --text_path misc/demo.txt
+```
+
+## Train Your Own Detection Model
+
+### Train BERT detection model
 
 ```
 python src/train_typo_detector.py --config configs/config_detect.py
@@ -27,25 +57,13 @@ python src/train_typo_detector.py --config configs/config_detect.py
 ### Test BERT detection model
 
 ```
-python src/test_typo_detector.py --config configs/config_detect.py --checkpoint saved_models/bert_detection/best_f1.pth --json data/test.json
+python src/test_typo_detector.py --config configs/config_detect.py --checkpoint saved_models/bert_detection/best_f1.pth --json data/aishell3_test.json
 ```
 
 ### Inference BERT detection model
 
 ```
-python src/predict_typo_detector.py --config configs/config_detect.py --checkpoint saved_models/bert_detection/best_f1.pth --text_path demo.txt
-```
-
-### Test Phonetic MLM
-
-```
-python src/test_phonetic_mlm.py --config configs/config_phonetic_mlm.py --json data/test.json
-```
-
-### Inference Phonetic MLM
-
-```
-python src/predict_phonetic_mlm.py --config configs/config_phonetic_mlm.py --text_path demo.txt
+python src/predict_typo_detector.py --config configs/config_detect.py --checkpoint saved_models/bert_detection/best_f1.pth --text_path misc/demo.txt
 ```
 
 ## Citation
