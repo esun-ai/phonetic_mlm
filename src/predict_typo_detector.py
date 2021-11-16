@@ -59,7 +59,7 @@ def main(config, checkpoint, text_path, threshold):
     )
 
     model = BertForTokenClassification.from_pretrained(config.model_source, return_dict=True, num_labels=2)
-    model.load_state_dict(torch.load(checkpoint))
+    model.load_state_dict(torch.load(checkpoint, map_location=device))
     model.to(device)
 
     detected_char_positions_collect = predict(model, dataloader, device, tokenizer, threshold=threshold)

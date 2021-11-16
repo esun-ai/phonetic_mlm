@@ -27,7 +27,7 @@ def main(config, test_json, checkpoint, threshold):
     )
 
     model = BertForTokenClassification.from_pretrained(config.model_source, return_dict=True, num_labels=2)
-    model.load_state_dict(torch.load(checkpoint))
+    model.load_state_dict(torch.load(checkpoint, map_location=device))
     model.to(device)
 
     evaluation = evaluate(model, dataloader, device, tokenizer, threshold=threshold)

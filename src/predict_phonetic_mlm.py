@@ -32,7 +32,7 @@ def main(config, detector_config, text_path):
     )
 
     detector = BertForTokenClassification.from_pretrained(detector_config.model_source, return_dict=True, num_labels=2)
-    detector.load_state_dict(torch.load(config.detector_checkpoint_path))
+    detector.load_state_dict(torch.load(config.detector_checkpoint_path, map_location=device))
     detector.to(device)
 
     mlm = BertForMaskedLM.from_pretrained(config.model_source)
