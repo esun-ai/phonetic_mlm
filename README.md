@@ -37,13 +37,17 @@ cd ..
 ### Test Phonetic MLM
 
 ```
-python src/test_phonetic_mlm.py --config configs/config_phonetic_mlm.py --json data/aishell3_test.json
+python src/test_phonetic_mlm.py \
+  --config configs/config_phonetic_mlm.py \
+  --json data/aishell3_test.json
 ```
 
 ### Inference Phonetic MLM
 
 ```
-python src/predict_phonetic_mlm.py --config configs/config_phonetic_mlm.py --text_path misc/demo.txt
+python src/predict_phonetic_mlm.py \
+  --config configs/config_phonetic_mlm.py \
+  --text_path misc/demo.txt
 ```
 
 ## Train Your Own Detection Model
@@ -51,19 +55,26 @@ python src/predict_phonetic_mlm.py --config configs/config_phonetic_mlm.py --tex
 ### Train BERT detection model
 
 ```
-python src/train_typo_detector.py --config configs/config_detect.py
+python src/train_typo_detector.py \
+  --config configs/config_detect.py
 ```
 
 ### Test BERT detection model
 
 ```
-python src/test_typo_detector.py --config configs/config_detect.py --checkpoint saved_models/bert_detection/best_f1.pth --json data/aishell3_test.json
+python src/test_typo_detector.py \
+  --config configs/config_detect.py \
+  --checkpoint saved_models/bert_detection/best_f1.pth \
+  --json data/aishell3_test.json
 ```
 
 ### Inference BERT detection model
 
 ```
-python src/predict_typo_detector.py --config configs/config_detect.py --checkpoint saved_models/bert_detection/best_f1.pth --text_path misc/demo.txt
+python src/predict_typo_detector.py \
+  --config configs/config_detect.py \
+  --checkpoint saved_models/bert_detection/best_f1.pth \
+  --text_path misc/demo.txt
 ```
 
 ## Citation
