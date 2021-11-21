@@ -24,7 +24,7 @@ pip install -r requirements.txt
 
 ### Download pretrained model
 
-Download pretrained detection model on AISHELL3: https://storage.googleapis.com/esun-ai/bert_detection.zip
+Download pretrained detection model on AISHELL3: [LINK](https://storage.googleapis.com/esun-ai/bert_detection.zip)
 
 ```
 mkdir saved_models
