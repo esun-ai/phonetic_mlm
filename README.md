@@ -1,6 +1,6 @@
 # Integrated Semantic and Phonetic Post-correction for Chinese Speech Recognition
 
-| [paper](https://arxiv.org/abs/2111.08400) | [dataset](data/) | [pretrained detection model](https://storage.googleapis.com/esun-ai/bert_detection.zip) |
+| [paper](https://arxiv.org/abs/2111.08400) | [dataset](data/) | [pretrained detection model](https://rd-tcsynth.swlab.cloud/download?filename=bert_detection.zip) |
 
 Authors: [Yi-Chang Chen](https://github.com/GitYCC), Chun-Yen Cheng, [Chien-An Chen](https://github.com/LukeCCA), Ming-Chieh Sung and Yi-Ren Yeh
 
@@ -24,7 +24,7 @@ pip install -r requirements.txt
 
 ### Download pretrained model
 
-Download pretrained detection model on AISHELL3: [LINK](https://storage.googleapis.com/esun-ai/bert_detection.zip)
+Download pretrained detection model on AISHELL3: [LINK](https://rd-tcsynth.swlab.cloud/download?filename=bert_detection.zip)
 
 ```
 mkdir saved_models
